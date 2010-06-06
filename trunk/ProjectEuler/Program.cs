@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace ProjectEuler
 {
@@ -14,11 +15,219 @@ namespace ProjectEuler
         {
             DateTime start = DateTime.Now;
 
-            ProblemTwelve();
+            ProblemFourteen();
 
             DateTime finish = DateTime.Now;
             TimeSpan diff = finish - start;
             Console.WriteLine("Solution took " + diff.Minutes + " min " + diff.Seconds + " sec " + diff.Milliseconds + " ms.");
+        }
+
+        /* *** PROBLEM FIFTEEN***
+         * * 
+         * Starting in the top left corner of a 2x2 grid, there are 6 routes 
+         * (without backtracking) to the bottom right corner.
+         * 
+         * How many routes are there through a 20x20 grid?
+         * 
+         *      _ _ 
+         *     |   |
+         *     |_ _|
+         */
+        private struct coord
+        {
+            public int x = 0;
+            public int y = 0;
+        }
+
+        static void ProblemFifteen()
+        {
+            int x_len = 2, y_len = 2;
+            int routes = 0;
+            List<coord[]> traveled_paths = new List<coord[]>();
+            bool more_paths = true;
+            
+            coord[] curr_path = new coord[x_len*y_len];
+            coord pos = new coord();
+
+            do
+            {
+                if (!hasTraveled(curr_path, traveled_paths))
+                {
+
+                }
+            }
+            while (pos.x != x_len && pos.y != y_len);
+            
+        }
+
+        // TODO: Perhaps some refactoring here.
+        static bool hasTraveled(coord[] curr_path, List<coord[]> traveled_paths)
+        {
+            for (int j = 0; j < curr_path.Length; j++)
+            {
+                foreach (coord[] path in traveled_paths)
+                {
+                    bool path_traveled = true;
+
+                    for (int i = 0; i < path.Length; i++)
+                    {
+                        if (path[i].x != curr_path[j].x && path[i].y != curr_path[j].y)
+                        {
+                            path_traveled = false;
+                            break;
+                        }
+                    }
+                    if (path_traveled)
+                        return true;
+                }
+            }
+            return false;   // if we got here we didn't find any paths traveled
+        }
+
+        /* *** PROBLEM FOURTEEN
+         * 
+         * The following iterative sequence is defined for the set of positive integers:
+         * 
+         * n -> n/2 (n is even)
+         * n -> 3n + 1 (n is odd)
+         * 
+         * Using the rule above and starting with 13, we generate the following sequence:
+         * 13,  40,  20,  10,  5,  16,  8,  4,  2,  1
+         * 
+         * It can be seen that this sequence (starting at 13 and finishing at 1) contains 10 terms. 
+         * Although it has not been proved yet (Collatz Problem), it is thought that all starting numbers finish at 1.
+         * 
+         * Which starting number, under one million, produces the longest chain?
+         * 
+         * NOTE: Once the chain starts the terms are allowed to go above one million.
+         */
+        static void ProblemFourteen()
+        {
+            int max = 1000000, longestLength = 0, answer = 0;
+
+            for (int i = 1; i < max; i++)
+            {
+                long result = i;
+                int seqLength = 1;
+
+                do
+                {
+                    if (result % 2 == 0)
+                    {
+                        result = result / 2;
+                    }
+                    else
+                    {
+                        result = 3 * result + 1;
+                    }
+
+                    seqLength++;
+                }
+                while (result != 1);
+
+                if (seqLength > longestLength)
+                {
+                    longestLength = seqLength;
+                    answer = i;
+                }
+            }
+            Console.WriteLine("The starting number, under one million that produces the longest chain is\n " + answer);
+        }
+
+        /* *** PROBLEM THIRTEEN ***
+         * 
+         * Work out the first ten digits of the sum of the following one-hundred 50-digit numbers.
+         * 
+         *  *** see txt file ***
+         */
+        static void ProblemThirteen()
+        {
+            string path = "C:\\Users\\John\\Documents\\Visual Studio 2010\\Projects\\ProjectEuler\\ProjectEuler\\problem13.txt";
+            string[] bigNumbers = new string[100];
+            int numLength = 50;
+
+            // Read from file
+            try
+            {
+                StreamReader sr = new StreamReader(path);
+                string line;
+                int count = 0;
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    bigNumbers[count] = line;
+                    count++;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            int r = 0;  // remainder
+            int num1 = 0, num2 = 0, result = 0;
+            string total = null;
+            List<int> answer = new List<int>(50);
+
+            // amount of numbers
+            for (int i = 0; i < bigNumbers.Length-1; i++)
+            {
+                // length of numbers
+                for (int j = numLength-1; j >= 0; j--)
+                {
+                    if (total == null)
+                    {
+                        num1 = Int16.Parse(bigNumbers[i].ElementAt(j).ToString());
+                    }
+                    else
+                    {
+                        num1 = Int16.Parse(total.ElementAt(j).ToString());
+                    }
+                    num2 = Int16.Parse(bigNumbers[i + 1].ElementAt(j).ToString());
+
+                    if (j > 0 && num1 + num2 + r > 9)
+                    {
+                        result = num1 + num2 + r - 10;
+                        r = 1;
+                    }
+                    else
+                    {
+                        result = num1 + num2 + r;
+                        r = 0;
+                    }
+                    answer.Add(result);
+                }
+
+                StringBuilder sb = new StringBuilder();
+                for (int k = answer.Count-1; k >= 0; k--)
+                {
+                    sb.Append(answer.ElementAt(k));
+                }
+                total = sb.ToString();
+
+                // reset numlength since addition may have altered length
+                numLength = total.Length;
+                answer.Clear();
+
+                if (i < bigNumbers.Length-2)
+                {
+                    StringBuilder sbNum = new StringBuilder(bigNumbers[i+2]);
+                    while (sbNum.Length < numLength)
+                    {
+                        sbNum.Insert(0, "0");
+                    }
+                    bigNumbers[i + 2] = sbNum.ToString();
+                }
+            }
+
+            char[] arr = total.ToCharArray();
+            StringBuilder approxTotal = new StringBuilder();
+            for (int i = 0; i < 10; i++)
+            {
+                approxTotal.Append(arr[i]);
+            }
+
+           Console.WriteLine("The first 10 digits of the sum of the 100 50-digit numbers is " + approxTotal);
         }
 
         /* *** PROBLEM TWELVE ***
@@ -48,7 +257,6 @@ namespace ProjectEuler
             long numTriangleNumbers = 1;
             int numDivisors = 0, numDivisorsNeeded = 500;
             bool foundNumber = false;
-            int k = 1;
 
             while (!foundNumber)
             {
@@ -56,41 +264,34 @@ namespace ProjectEuler
 
                 nextTriangleNumber = lastTriangleNumber + numTriangleNumbers;
 
-                //if (k < 10)
-                    //Console.WriteLine(nextTriangleNumber);
+                int max = (int)Math.Sqrt(nextTriangleNumber);
 
-                for (int factor = 1; factor * factor <= numTriangleNumbers; factor++)
+                bool isPerfectSquare = Math.Sqrt(nextTriangleNumber) == max;
+
+                /*
+                 * A little help & research into a more efficient method for finding the factors
+                 * other than a brute-force from 1 to trianglenumber check.
+                 * 
+                 * http://stackoverflow.com/questions/277368/euler-project-help-problem-12-prime-factors-and-the-like
+                 * 
+                 * http://mathforum.org/library/drmath/view/57151.html
+                 */
+                for (int factor = 1; factor <= max; factor++)
                 {
-                    if (numTriangleNumbers % factor == 0)
+                    if (nextTriangleNumber % factor == 0)
                     {
-                        numDivisors++;
-                        if (factor * factor != numTriangleNumbers)
-                            numDivisors++;
+                        numDivisors += 2;
                     }
                 }
-                /*
-                int max = (int) Math.Ceiling(Math.Sqrt(nextTriangleNumber));
-                
-                for (int j = 1; j <= max; j++)
-                {
-                    if (nextTriangleNumber % j == 0)
-                    {
-                        numDivisors++;
-                        if (j == max && max != 1)
-                        {
-                            numDivisors++;
-                        }
-                    }
-                }*/
 
-                if (k < 10)
-                    Console.WriteLine(nextTriangleNumber + " " + numDivisors + " max - ");
+                if (isPerfectSquare)
+                    numDivisors--;
 
                 if (numDivisors > numDivisorsNeeded)
                 {
                     foundNumber = true;
                 }
-                k++;
+
                 numTriangleNumbers++;
                 lastTriangleNumber = nextTriangleNumber;
             }
